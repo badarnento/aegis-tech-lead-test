@@ -24,6 +24,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_active',
+        'confirmation_token',
+        'confirmed_at',
         'created_at',
     ];
 
@@ -35,6 +38,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'is_active',
+        'confirmation_token',
+        'confirmed_at',
     ];
 
     /**
@@ -51,5 +56,4 @@ class User extends Authenticatable
     {
         return Carbon::parse($value)->format('Y-m-d\TH:i:s\Z');
     }
-    
 }

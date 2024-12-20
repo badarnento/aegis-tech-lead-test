@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class UserRegistrationConfirmationEmail extends Mailable
+class AdminUserNotificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -29,11 +29,9 @@ class UserRegistrationConfirmationEmail extends Mailable
      * @return $this
      */
     public function build()
-
     {
-        return $this->subject('Confirm Your Registration')
-            ->view('emails.user_registration_confirmation')
-            ->with(['user' => $this->user]);
-
+        return $this->subject('New User Registered')
+                    ->view('emails.admin_user_notification')
+                    ->with(['user' => $this->user]);
     }
 }

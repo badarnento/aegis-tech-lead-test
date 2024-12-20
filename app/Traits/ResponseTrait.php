@@ -33,7 +33,7 @@ trait ResponseTrait
 		$respone = [
 			"page"       => $paginateData['current_page'],
 			"per_page"   => $paginateData['per_page'],
-			"total_page" => $paginateData['total'],
+			"total_data" => $paginateData['total'],
 			$dataKey     => $paginateData['data']
 		];
 

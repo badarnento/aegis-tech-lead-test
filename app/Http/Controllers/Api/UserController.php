@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AdminUserNotificationEmail;
+use App\Mail\UserRegistrationConfirmationEmail;
 
 class UserController extends Controller
 {
@@ -25,9 +29,13 @@ class UserController extends Controller
             $this->_sortQuery($query, $request);
 
             $users = $query->paginate($perPage);
-            $paginateData =  $this->paginationResource($users, 'users');
 
-            return $this->successResponse('Users retrieved successfully', $paginateData);
+            if ($users->count() == 0) {
+                return $this->successResponse('Users retrieved successfully', []);
+            }
+            $data =  $this->paginationResource($users, 'users');
+
+            return $this->successResponse('Users retrieved successfully', $data);
         } catch (\Throwable $e) {
             Log::error('Error in index method: ' . $e->getMessage(), ['trace' => $e->getTrace()]);
             return $this->errorResponse('Failed to retrieve users');
@@ -40,11 +48,19 @@ class UserController extends Controller
         try {
             $validated = $request->validated();
 
+            $confirmationToken = Str::random(50); // Generate token
+
             $user = User::create([
                 'name'     => $validated['name'],
                 'email'    => $validated['email'],
                 'password' => Hash::make($validated['password']),
+                'confirmation_token' => $confirmationToken,
             ]);
+
+            Mail::to($user->email)->queue(new UserRegistrationConfirmationEmail($user));
+
+            $adminEmail = config('system.admin_email');
+            Mail::to($adminEmail)->queue(new AdminUserNotificationEmail($user));
 
             return $this->successResponse('User created successfully', $user, 201);
         } catch (\Throwable $e) {
@@ -62,6 +78,24 @@ class UserController extends Controller
         } catch (\Throwable $e) {
             Log::error('Error in show method: ' . $e->getMessage(), ['id' => $id, 'trace' => $e->getTrace()]);
             return $this->errorResponse('User not found', null, 404);
+        }
+    }
+
+    public function confirmRegistration($token)
+    {
+        try {
+            $user = User::where('confirmation_token', $token)->firstOrFail();
+
+            $user->update([
+                'is_active' => 1,
+                'confirmation_token' => null,
+                'confirmed_at' => now()
+            ]);
+
+            return $this->successResponse('Thanks for your confirmation, your account has been successfully activated.', null);
+        } catch (\Throwable $e) {
+            Log::error('Error in confirmRegistration method: ' . $e->getMessage(), ['token' => $token, 'trace' => $e->getTrace()]);
+            return $this->errorResponse('Failed confirmation', null, 404);
         }
     }
 
