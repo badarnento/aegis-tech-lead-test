@@ -49,10 +49,12 @@ class UserRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
+        $data = array_merge(...array_values($validator->errors()->toArray()));
         throw new HttpResponseException($this->errorResponse(
             'Validation errors',
-            $validator->errors(),
+            $data,
             422
         ));
     }
+    
 }
