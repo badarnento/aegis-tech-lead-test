@@ -23,7 +23,7 @@ class UserController extends Controller
         try {
             $perPage = $request->per_page ?? 10;
 
-            $query = User::where('is_active', 1);
+            $query = User::withCount('orders')->where('is_active', 1);
 
             $this->_searchFilter($query, $request);
             $this->_sortQuery($query, $request);

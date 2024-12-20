@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,3 +26,5 @@ Route::prefix('users')->group(function () {
     Route::get('/{id}', [UserController::class, 'show']);
     Route::get('/confirmation/{token}', [UserController::class, 'confirmRegistration'])->name('user.confirmation');
 });
+
+Route::post('/orders', [OrderController::class, 'store']);

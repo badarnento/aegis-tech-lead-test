@@ -51,9 +51,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('Y-m-d\TH:i:s\Z');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }
